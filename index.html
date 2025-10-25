@@ -1,0 +1,1974 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Cuentas - Panel y Acceso Cliente</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* ====================
+            VARIABLES CSS (PARA EL TEMA)
+            ==================== */
+        :root {
+            --primary-color: #E50914; /* Netflix Red (Default) */
+            --secondary-color: #333;
+            --background-color: #f4f4f9;
+            --text-color: #333;
+            --hover-shadow: rgba(229, 9, 20, 0.4);
+            --header-border-color: #E50914;
+            --stock-button-color: #00bcd4; /* Azul Turquesa para el stock */
+        }
+
+        /* Tema Azul Clásico */
+        body.theme-blue {
+            --primary-color: #007bff; /* Blue */
+            --hover-shadow: rgba(0, 123, 255, 0.4);
+            --header-border-color: #007bff;
+        }
+
+        /* ====================
+            ESTILOS GENERALES
+            ==================== */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            box-sizing: border-box;
+            transition: margin-right 0.3s ease;
+        }
+        
+        /* Ajuste de margen para cuando el sidebar está abierto */
+        body.config-open {
+            margin-right: 300px;
+        }
+
+        *, *::before, *::after { box-sizing: inherit; }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            display: none;
+        }
+        .container.visible { display: block; }
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            border-bottom: 3px solid var(--header-border-color);
+            padding-bottom: 15px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #444;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 25px;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        /* Color de los botones/links principales */
+        nav#main-nav a:hover, nav#main-nav a.active {
+            background-color: var(--primary-color);
+            box-shadow: 0 4px 8px var(--hover-shadow);
+        }
+        .login-choice-box button.admin-btn {
+             background: linear-gradient(to right, var(--primary-color), var(--header-border-color));
+             box-shadow: 0 4px 10px var(--hover-shadow);
+        }
+        .login-choice-box button.admin-btn:hover {
+             box-shadow: 0 6px 15px var(--hover-shadow);
+         }
+        .login-box button[type="submit"] {
+            background: linear-gradient(to right, var(--primary-color), var(--header-border-color));
+            box-shadow: 0 4px 10px var(--hover-shadow);
+        }
+        .login-box button[type="submit"]:hover {
+            box-shadow: 0 6px 15px var(--hover-shadow);
+        }
+        #clientes button[type="submit"] {
+            background: linear-gradient(to right, var(--primary-color), var(--header-border-color));
+            box-shadow: 0 4px 10px var(--hover-shadow);
+        }
+        #clientes button[type="submit"]:hover {
+            box-shadow: 0 6px 15px var(--hover-shadow);
+        }
+        #searchInput:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.2);
+        }
+        .tab-button.active { color: var(--primary-color); }
+        .listado-admin li:hover { border-right: 5px solid var(--primary-color); }
+        
+        /* ====================
+            BOTÓN FLOTANTE DE STOCK (NUEVO)
+            ==================== */
+        #floating-stock-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--stock-button-color);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 50%; /* Circular */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            cursor: pointer;
+            z-index: 999;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            width: 60px;
+            height: 60px;
+            line-height: 1;
+            border: 3px solid white;
+        }
+
+        #floating-stock-button:hover {
+            background-color: #0097a7; /* Tono más oscuro */
+            transform: scale(1.1);
+        }
+        
+        #stock-tooltip {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 250px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 998;
+            display: none;
+            transition: opacity 0.3s ease;
+        }
+
+        #stock-tooltip.visible {
+            display: block;
+        }
+
+        #stock-tooltip h4 {
+            margin-top: 0;
+            border-bottom: 1px solid #444;
+            padding-bottom: 5px;
+            color: #f1c40f;
+            font-size: 1.1em;
+        }
+
+        #stock-tooltip ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #stock-tooltip li {
+            padding: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+            border-bottom: 1px dashed #444;
+        }
+        
+        #stock-tooltip li:last-child {
+            border-bottom: none;
+        }
+
+        .stock-available {
+            font-weight: bold;
+            color: #2ecc71; /* Verde fuerte */
+        }
+        .stock-limited {
+            font-weight: bold;
+            color: #f39c12; /* Naranja */
+        }
+        .stock-none {
+            font-weight: bold;
+            color: #e74c3c; /* Rojo */
+        }
+
+        /* ====================
+            BARRA DE CONFIGURACIÓN
+            ==================== */
+        #config-sidebar {
+            height: 100%;
+            width: 300px;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            right: -300px;
+            background-color: #2c3e50;
+            overflow-x: hidden;
+            padding: 20px;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+            transition: right 0.3s ease;
+            color: white;
+            display: none;
+        }
+        #config-sidebar.visible { right: 0; display: block; }
+
+        #config-sidebar h3 {
+            color: #f1c40f;
+            border-bottom: 2px solid #34495e;
+            padding-bottom: 10px;
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+
+        .config-group {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px solid #34495e;
+            border-radius: 8px;
+            background-color: #34495e;
+        }
+        .config-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #ecf0f1;
+            font-size: 0.9em;
+        }
+        .config-group input[type="text"],
+        .config-group input[type="password"],
+        .config-group input[type="number"] { /* Incluimos number */
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            background-color: #ecf0f1;
+            color: #333;
+        }
+        .config-group button {
+            background-color: #3498db;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            margin-top: 5px;
+        }
+        .config-group button:hover {
+            background-color: #2980b9;
+        }
+        .config-message {
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 0.85em;
+            display: none;
+            text-align: center;
+        }
+        .config-message.success { background-color: #27ae60; color: white; }
+        .config-message.error { background-color: #e74c3c; color: white; }
+        
+        /* Botón de tema */
+        .theme-buttons button {
+            padding: 10px;
+            border: 2px solid transparent;
+            border-radius: 5px;
+            margin-right: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .theme-buttons button.active {
+            border-color: #f1c40f;
+            box-shadow: 0 0 5px #f1c40f;
+        }
+        .theme-red { background-color: #E50914; color: white; }
+        .theme-blue-btn { background-color: #007bff; color: white; }
+        
+        /* Botón de configuración en la barra de navegación */
+        #showConfigBtn {
+            background: #f1c40f;
+            color: #333;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        #showConfigBtn:hover {
+            background: #e6b200;
+            transform: scale(1.05);
+        }
+        
+        /* Botón de cierre del sidebar */
+        .close-btn {
+            color: #ecf0f1;
+            font-size: 2em;
+            cursor: pointer;
+            float: right;
+            line-height: 0;
+            margin-top: 5px;
+        }
+        .close-btn:hover {
+            color: #e74c3c;
+        }
+        
+        /* Contenedor de configuración de capacidad */
+        .capacity-config-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+        .capacity-config-container label {
+            flex-grow: 1;
+        }
+        .capacity-config-container input {
+            width: 80px;
+            flex-shrink: 0;
+            text-align: center;
+        }
+
+        /* ====================
+            DISPLAY DE CAPACIDAD
+            ==================== */
+        .capacity-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+        }
+        .capacity-item {
+            flex-basis: calc(50% - 10px);
+            padding: 10px;
+            border-radius: 6px;
+            background-color: #eee;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .capacity-item h4 {
+            margin: 0 0 8px 0;
+            font-size: 1.1em;
+            color: var(--secondary-color);
+            display: flex;
+            justify-content: space-between;
+        }
+        .capacity-boxes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        .box {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+            transition: background-color 0.3s;
+        }
+        .box.occupied {
+            background-color: #dc3545; /* Rojo */
+        }
+        .box.free {
+            background-color: #28a745; /* Verde */
+        }
+
+        /* ====================
+            ESTILOS DE NAVEGACIÓN
+            ==================== */
+        nav#main-nav { 
+            display: none; 
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+        nav#main-nav .nav-links {
+            display: flex;
+            flex-grow: 1;
+        }
+        nav#main-nav .nav-utility-btns {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+        }
+        nav#main-nav.visible { display: flex; }
+        nav#main-nav a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 5px 8px 5px 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            background-color: #555;
+        }
+        #adminLogoutBtn, #showConfigBtn { margin: 5px 0 5px 10px; }
+
+
+        /* ... [MANTENER EL RESTO DE ESTILOS CSS] ... */
+        
+        /* ====================
+            VISTA INICIAL DE SELECCIÓN DE LOGIN
+            ==================== */
+         #login-selector {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://assets.nflxext.com/ffe/siteui/vlv3/d0a0f443-5853-4e42-99bd-b0340ca04899/d0a0f443-5853-4e42-99bd-b0340ca04899-web-medium.jpg') no-repeat center center fixed;
+            background-size: cover;
+            padding: 20px;
+        }
+        .login-choice-box {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+        }
+        .login-choice-box h2 {
+            color: #333;
+            margin-bottom: 30px;
+            border-bottom: none;
+            font-size: 1.8em;
+        }
+        .login-choice-box button {
+             background: linear-gradient(to right, #555, #333);
+            color: white;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.2em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .login-choice-box button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* NUEVO ESTILO: Botón para la Tienda */
+        .login-choice-box a.shop-btn {
+            background: linear-gradient(to right, #27ae60, #2ecc71); /* Green for Shop */
+            color: white;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.2em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(46, 204, 113, 0.4);
+            margin-bottom: 0; /* Último botón */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        .login-choice-box a.shop-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(46, 204, 113, 0.6);
+        }
+         
+        /* ====================
+            PANTALLAS DE LOGIN (Admin y Cliente)
+            ==================== */
+        .login-section {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://assets.nflxext.com/ffe/siteui/vlv3/d0a0f443-5853-4e42-99bd-b0340ca04899/d0a0f443-5853-4e42-99bd-b0340ca04899-web-medium.jpg') no-repeat center center fixed;
+            background-size: cover;
+            position: relative;
+            padding: 20px;
+        }
+        .login-section.active { display: flex; }
+        .login-box {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+        .login-box h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            border-bottom: none;
+        }
+        /* Color título login cliente */
+         #client-login .login-box h2 {
+             color: #007bff;
+         }
+        .login-box input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 18px;
+            border: 1px solid #bbb;
+            border-radius: 6px;
+            font-size: 1em;
+            background-color: #fcfcfc;
+        }
+       
+        #client-login .login-box button[type="submit"] { /* Botón login cliente */
+             background: linear-gradient(to right, #007bff, #0056b3);
+             box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4);
+        }
+        .login-box button[type="submit"]:hover {
+            transform: translateY(-3px);
+        }
+         #client-login .login-box button[type="submit"]:hover {
+             background: linear-gradient(to right, #0056b3, #007bff);
+             box-shadow: 0 6px 15px rgba(0, 123, 255, 0.6);
+         }
+        .login-error-message { color: #dc3545; font-weight: bold; margin-top: 15px; display: none; font-size: 0.9em; }
+         .back-to-selector { margin-top: 20px; background: none; border: none; color: #555; cursor: pointer; font-size: 0.9em; text-decoration: underline; }
+         .back-to-selector:hover { color: #000; }
+
+        /* ====================
+            FORMULARIO DE CLIENTES (Admin)
+            ==================== */
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+
+        /* Estilo unificado para inputs y selects del formulario de registro */
+        #clientes input[type="text"],
+        #clientes input[type="email"],
+        #clientes input[type="tel"],
+        #clientes select {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1em;
+            background-color: #fcfcfc;
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: #444; }
+        
+        #clientes button[type="submit"]:hover {
+            background: linear-gradient(to right, var(--header-border-color), var(--primary-color));
+            transform: translateY(-3px);
+        }
+
+        /* Botón de WhatsApp (Admin) */
+        #resultadoRegistro { display: none; margin-top: 20px; text-align: center; }
+        .whatsapp-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            background: linear-gradient(to right, #25D366, #128C7E);
+            color: white;
+            padding: 12px 20px;
+            margin-top: 10px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.4);
+        }
+        .whatsapp-link i { margin-right: 10px; }
+        .whatsapp-link:hover {
+            background: linear-gradient(to right, #128C7E, #25D366);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(37, 211, 102, 0.6);
+        }
+
+        /* ====================
+            BARRA DE BÚSQUEDA
+            ==================== */
+        .search-container { margin-bottom: 20px; position: relative; }
+        #searchInput {
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+        .search-container i.fa-search {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+        }
+
+        /* ====================
+            PESTAÑAS DE ADMIN (TABS)
+            ==================== */
+        .tabs-nav { display: flex; margin-bottom: 20px; border-bottom: 2px solid #ccc; overflow-x: auto; padding-bottom: 2px; -webkit-overflow-scrolling: touch; }
+        .tab-button {
+            background: #eee; border: 1px solid #ccc; border-bottom: none; padding: 10px 15px; cursor: pointer; font-weight: 600; color: #555; border-top-left-radius: 8px; border-top-right-radius: 8px; margin-bottom: -2px; transition: all 0.3s ease; white-space: nowrap; margin-right: 5px; flex-shrink: 0;
+        }
+        .tab-button.active {
+            background-color: #fff;
+            border-bottom: 2px solid #fff;
+            position: relative;
+            z-index: 1;
+        }
+        .tab-content { display: none; padding: 15px 0 5px 0; border-top: 2px solid #ccc; margin-top: -2px; }
+        .tab-content.active { display: block; }
+
+        /* ====================
+            LISTA DE ADMIN Y SEMÁFORO
+            ==================== */
+        .listado-admin ul { list-style: none; padding: 0; margin: 0; }
+        .listado-admin li {
+            background: #fdfdfd; padding: 15px; padding-left: 25px; margin-bottom: 12px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex; flex-direction: column; transition: all 0.3s ease; position: relative; overflow: hidden;
+        }
+        .listado-admin li::before {
+            content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 10px; transition: background-color 0.3s ease;
+        }
+        .listado-admin li.estado-activo::before { background-color: #28a745; }
+        .listado-admin li.estado-cortado::before { background-color: #dc3545; }
+        .listado-admin li:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.12); }
+        .listado-admin .estado-texto { font-weight: bold; display: inline-block; margin-left: 10px; }
+        .estado-activo .estado-texto { color: #1a6d36; }
+        .estado-cortado .estado-texto { color: #a72836; }
+        .listado-admin .data-row { display: flex; flex-wrap: wrap; width: 100%; margin-bottom: 8px; align-items: center; gap: 5px 10px; }
+        .listado-admin .data-row label { font-weight: 500; color: #555; flex-basis: 120px; flex-shrink: 0; margin-right: 0; }
+        .listado-admin .data-row input, .listado-admin .data-row select, .listado-admin .data-row span {
+            padding: 8px; border: 1px solid #ccc; border-radius: 5px; flex-grow: 1; min-width: 150px; background-color: #fff; font-size: 0.95em;
+        }
+        .listado-admin .data-row span { border: 1px solid transparent; background-color: transparent; padding-left: 0; min-width: 0; }
+        .listado-admin .data-row input:disabled, .listado-admin .data-row select:disabled { background-color: #f8f8f8; color: #555; cursor: not-allowed; border-color: #e0e0e0; }
+        .listado-admin .actions { display: flex; gap: 10px; margin-top: 15px; justify-content: flex-end; flex-wrap: wrap; }
+        .listado-admin .actions button {
+            width: auto; padding: 8px 15px; font-size: 0.9em; border-radius: 6px; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: inline-flex; align-items: center; gap: 5px; border: none; cursor: pointer;
+        }
+        .btn-eliminar { background: linear-gradient(to right, #dc3545, #c82333); color: white; box-shadow: 0 2px 5px rgba(220, 53, 69, 0.3); }
+        .btn-eliminar:hover { background: linear-gradient(to right, #c82333, #dc3545); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(220, 53, 69, 0.5); }
+        .btn-editar { background: linear-gradient(to right, #007bff, #0056b3); color: white; box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3); }
+        .btn-editar:hover { background: linear-gradient(to right, #0056b3, #007bff); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 123, 255, 0.5); }
+        .btn-guardar { background: linear-gradient(to right, #28a745, #1e7e34); color: white; box-shadow: 0 2px 5px rgba(40, 167, 69, 0.3); }
+        .btn-guardar:hover { background: linear-gradient(to right, #1e7e34, #28a745); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(40, 167, 69, 0.5); }
+
+        /* Botones de descarga y limpiar */
+        .admin-global-actions { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 25px; margin-top: 10px; }
+        .descarga-btn {
+            display: inline-flex; align-items: center; justify-content: center; padding: 10px 20px; border-radius: 8px; font-size: 1em; font-weight: bold; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 3px 8px rgba(0,0,0,0.1); color: #333; border: none; cursor: pointer; margin: 0;
+        }
+        .descarga-btn i { margin-right: 8px; }
+        #descargarBtn { background: linear-gradient(to right, #ffc107, #e0a800); color: #333; box-shadow: 0 3px 8px rgba(255, 193, 7, 0.3); }
+        #descargarBtn:hover { background: linear-gradient(to right, #e0a800, #ffc107); transform: translateY(-2px); box-shadow: 0 5px 12px rgba(255, 193, 7, 0.5); }
+        #limpiarBtn { background: linear-gradient(to right, #dc3545, #c82333); color: white; box-shadow: 0 3px 8px rgba(220, 53, 69, 0.3); }
+        #limpiarBtn:hover { background: linear-gradient(to right, #c82333, #dc3545); transform: translateY(-2px); box-shadow: 0 5px 12px rgba(220, 53, 69, 0.5); }
+
+         /* Mensaje de no resultados */
+         .no-results {
+             padding: 20px;
+             text-align: center;
+             color: #dc3545;
+             font-weight: bold;
+             border: 1px dashed #f5c6cb;
+             border-radius: 8px;
+             margin-top: 15px;
+         }
+
+         /* ====================
+            DASHBOARD DE CLIENTE
+            ==================== */
+        #client-dashboard { display: none; }
+         #client-dashboard .account-list { list-style: none; padding: 0; margin-top: 20px; }
+         #client-dashboard .account-item {
+             background: #f9f9f9; border: 1px solid #eee; border-left-width: 5px; border-radius: 8px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;
+         }
+         #client-dashboard .account-item.activo { border-left-color: #28a745; }
+         #client-dashboard .account-item.cortado { border-left-color: #dc3545; }
+         #client-dashboard .account-info { flex-grow: 1; }
+         #client-dashboard .account-info span { display: block; font-size: 0.9em; color: #666; margin-top: 3px; }
+         #client-dashboard .account-info strong { font-size: 1.1em; color: #333; word-break: break-all; }
+         #client-dashboard .account-status { font-weight: bold; padding: 5px 10px; border-radius: 5px; font-size: 0.9em; white-space: nowrap; flex-shrink: 0; }
+         #client-dashboard .account-status.activo { background-color: #d4edda; color: #155724; }
+         #client-dashboard .account-status.cortado { background-color: #f8d7da; color: #721c24; }
+         
+         /* NUEVOS ESTILOS PARA EL BOTÓN DE EMAIL DEL CLIENTE */
+         #client-dashboard .account-actions {
+            margin-top: 10px;
+            width: 100%;
+            text-align: right;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+         }
+         .btn-check-email {
+            background-color: #3498db;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3);
+         }
+         .btn-check-email:hover {
+            background-color: #2980b9;
+            transform: translateY(-1px);
+         }
+         .security-alert {
+             margin-top: 15px;
+             padding: 10px;
+             background-color: #f8d7da;
+             color: #721c24;
+             border-radius: 5px;
+             font-size: 0.85em;
+             border: 1px solid #f5c6cb;
+             display: flex;
+             align-items: center;
+             gap: 10px;
+         }
+         .security-alert strong {
+             color: #a72836;
+         }
+         /* FIN NUEVOS ESTILOS */
+         
+         #clientLogoutBtn {
+             background: linear-gradient(to right, #6c757d, #5a6268); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: bold; transition: all 0.3s ease; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2); margin-top: 30px; display: block; width: fit-content; margin-left: auto; margin-right: auto;
+         }
+         #clientLogoutBtn:hover {
+             background: linear-gradient(to right, #5a6268, #6c757d); transform: translateY(-2px); box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+         }
+
+        /* Media Queries para responsividad */
+        @media (max-width: 768px) {
+            body.config-open { margin-right: 0; }
+            #config-sidebar { width: 100%; right: -100%; }
+            #config-sidebar.visible { right: 0; }
+            .container { margin: 10px; padding: 15px; }
+            h1 { font-size: 2em; }
+            nav#main-nav a { padding: 8px 12px; font-size: 0.9em; }
+            .listado-admin .data-row label { flex-basis: 100%; margin-bottom: 3px; font-size: 0.9em; }
+            .listado-admin .data-row input, .listado-admin .data-row select, .listado-admin .data-row span { min-width: 100%; font-size: 0.9em; }
+            .admin-global-actions { justify-content: center; }
+            .search-container i.fa-search { display: none; }
+            #searchInput { padding-right: 15px; }
+             #client-dashboard .account-item { flex-direction: column; align-items: flex-start; gap: 10px; }
+             .capacity-item { flex-basis: 100%; }
+             /* Ajuste del botón flotante en móvil */
+             #floating-stock-button {
+                 bottom: 10px;
+                 right: 10px;
+                 width: 50px;
+                 height: 50px;
+                 font-size: 1.2em;
+                 padding: 10px;
+             }
+             #stock-tooltip {
+                 bottom: 70px;
+                 right: 10px;
+                 width: 220px;
+             }
+             #client-dashboard .account-status { margin-left: 0; }
+             #client-dashboard .account-actions { text-align: left; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="floating-stock-button" style="display: none;">
+        <i class="fas fa-cubes"></i>
+    </div>
+    
+    <div id="stock-tooltip">
+        <h4><i class="fas fa-chart-line"></i> Stock de Cuentas Libres</h4>
+        <ul id="stock-list">
+            <li>Netflix <span class="stock-available">3</span></li>
+        </ul>
+    </div>
+
+    <div id="config-sidebar">
+        <span class="close-btn" id="closeConfigBtn">&times;</span>
+        <h3><i class="fas fa-sliders-h"></i> Ajustes de Página</h3>
+
+        <div class="config-group">
+            <h4><i class="fas fa-palette"></i> Apariencia / Tema</h4>
+            <p style="font-size: 0.9em; color: #ccc;">Selecciona el tema de color para el panel:</p>
+            <div class="theme-buttons">
+                <button id="themeRedBtn" class="theme-red active"><i class="fas fa-fire"></i> Netflix (Rojo)</button>
+                <button id="themeBlueBtn" class="theme-blue-btn"><i class="fas fa-tint"></i> Clásico (Azul)</button>
+            </div>
+        </div>
+        
+        <div class="config-group">
+            <h4><i class="fas fa-chart-bar"></i> Capacidad Máxima de Cuentas</h4>
+            <p style="font-size: 0.9em; color: #ccc;">Establece el número máximo de cuentas/slots disponibles por tipo (0 para ilimitado).</p>
+            
+            <div id="capacity-config-list">
+                </div>
+             <button id="saveCapacityBtn"><i class="fas fa-save"></i> Guardar Capacidades</button>
+             <p id="capacityConfigMessage" class="config-message"></p>
+        </div>
+        <div class="config-group">
+            <h4><i class="fas fa-user-shield"></i> Credenciales de Administrador</h4>
+            <label for="newAdminUser">Nuevo Usuario:</label>
+            <input type="text" id="newAdminUser" placeholder="Usuario actual: admin">
+            <label for="newAdminPass">Nueva Contraseña:</label>
+            <input type="password" id="newAdminPass" placeholder="Contraseña actual">
+            <button id="saveAdminCredentialsBtn"><i class="fas fa-lock"></i> Actualizar Credenciales</button>
+            <p id="adminConfigMessage" class="config-message"></p>
+        </div>
+
+        <div class="config-group">
+            <h4><i class="fas fa-key"></i> Contraseña de Clientes</h4>
+            <label for="newClientPass">Nueva Contraseña por Defecto (Clientes):</label>
+            <input type="text" id="newClientPass" placeholder="Contraseña actual: 123">
+            <button id="saveClientPassBtn"><i class="fas fa-key"></i> Actualizar Clave Clientes</button>
+            <p id="clientConfigMessage" class="config-message"></p>
+            <p style="font-size: 0.8em; color: #bdc3c7; margin-top: 10px;">⚠️ NOTA: Esto solo afecta el *login* de los clientes, no las cuentas registradas. Las cuentas usan su propia contraseña.</p>
+        </div>
+
+    </div>
+
+    <section id="login-selector">
+        <div class="login-choice-box">
+            <h2>Bienvenido a la Gestión de Cuentas</h2>
+            <button id="showAdminLoginBtn" class="admin-btn"><i class="fas fa-user-shield"></i> Acceso Administrador</button>
+            <button id="showClientLoginBtn"><i class="fas fa-user"></i> Acceso Cliente</button>
+            <a href="tienda.html" class="shop-btn"><i class="fas fa-shopping-cart"></i> Comprar Cuentas / Ver Productos</a>
+        </div>
+    </section>
+
+    <section id="admin-login" class="login-section">
+        <div class="login-box">
+            <h2><i class="fas fa-user-shield"></i> Iniciar Sesión - Admin</h2>
+            <form id="loginForm">
+                <input type="text" id="username" placeholder="Usuario Admin" required>
+                <input type="password" id="password_login" placeholder="Contraseña Admin" required>
+                <button type="submit"><i class="fas fa-sign-in-alt"></i> Acceder</button>
+                <p id="login-error" class="login-error-message"><i class="fas fa-exclamation-triangle"></i> Usuario o contraseña incorrectos.</p>
+            </form>
+            <button class="back-to-selector" data-target="admin-login"><i class="fas fa-arrow-left"></i> Volver a Selección</button>
+        </div>
+    </section>
+
+     <section id="client-login" class="login-section">
+        <div class="login-box">
+            <h2><i class="fas fa-user"></i> Iniciar Sesión - Cliente</h2>
+            <form id="clientLoginForm">
+                <input type="email" id="client_email" placeholder="Tu Correo Electrónico" required>
+                <input type="password" id="client_password" placeholder="Tu Contraseña de Cliente" required>
+                <button type="submit"><i class="fas fa-sign-in-alt"></i> Ver Mis Cuentas</button>
+                <p id="client-login-error" class="login-error-message"><i class="fas fa-exclamation-triangle"></i> Correo o contraseña incorrectos.</p>
+            </form>
+            <button class="back-to-selector" data-target="client-login"><i class="fas fa-arrow-left"></i> Volver a Selección</button>
+        </div>
+    </section>
+
+    <div class="container">
+        <nav id="main-nav">
+            <div class="nav-links">
+                <a href="#clientes" id="nav-clientes" class="active"><i class="fas fa-user-plus"></i> Registro</a>
+                <a href="#admin" id="nav-admin"><i class="fas fa-cogs"></i> Panel</a>
+            </div>
+            <div class="nav-utility-btns">
+                 <button id="showConfigBtn"><i class="fas fa-sliders-h"></i> Configurar</button>
+                <button id="adminLogoutBtn" style="background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;"><i class="fas fa-sign-out-alt"></i> Salir</button>
+            </div>
+        </nav>
+
+        <h1 id="main-title">Gestión de Cuentas</h1>
+
+        <section id="clientes" class="content-section active">
+            <h2>Registrar Nueva Cuenta</h2>
+            <form id="formularioRegistro">
+                <div class="form-group">
+                    <label for="tipo_cuenta">Tipo de Cuenta:</label>
+                    <select id="tipo_cuenta" required>
+                        <option value="netflix">Netflix</option>
+                        <option value="disney">Disney+</option>
+                        <option value="hbo">HBO MAX</option>
+                        <option value="amazon">Amazon Prime Video</option>
+                        <option value="canva">Canva</option>
+                        <option value="revendedores">Revendedor</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="nombre">Nombre del Cliente/Revendedor:</label>
+                    <input type="text" id="nombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="whatsapp">Número de WhatsApp (con código país):</label>
+                    <input type="tel" id="whatsapp" required placeholder="Ej: 584120000000">
+                </div>
+                <div class="form-group">
+                    <label for="email">Correo Electrónico (Login Plataforma/Cliente):</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña (Login Plataforma/Cliente):</label>
+                    <input type="text" id="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="perfiles">Perfiles Asignados (si aplica):</label>
+                    <input type="text" id="perfiles" placeholder="Ej: Perfil Juan (Opcional)">
+                </div>
+                <div class="form-group">
+                    <label for="estado">Estado Inicial:</label>
+                    <select id="estado" required>
+                        <option value="activo">Activo</option>
+                        <option value="cortado">Cortado</option>
+                    </select>
+                </div>
+                <button type="submit"><i class="fas fa-save"></i> Guardar Cuenta</button>
+            </form>
+            <div id="resultadoRegistro">
+                <p>✅ Cuenta registrada. Usa este botón para enviar los datos:</p>
+                <a id="whatsappLink" href="#" target="_blank" class="whatsapp-link">
+                    <i class="fab fa-whatsapp"></i> Enviar Datos por WhatsApp
+                </a>
+            </div>
+        </section>
+
+        <section id="admin" class="content-section">
+            <h2>Panel de Administración</h2>
+            <div>
+                 <h3><i class="fas fa-warehouse"></i> Capacidad de Cuentas</h3>
+                 <div id="capacity-display-container" class="capacity-display">
+                     </div>
+                 <p>Lista de cuentas. El estado cambiará a CORTADO 30 días después del registro (excepto Revendedores).</p>
+
+                <div class="search-container">
+                    <input type="text" id="searchInput" placeholder="Buscar por Nombre, Email o WhatsApp..." autocomplete="off">
+                    <i class="fas fa-search"></i>
+                </div>
+
+                <div class="tabs-nav" id="adminTabsNav"></div>
+                <div class="admin-global-actions">
+                    <a id="descargarBtn" href="#" class="descarga-btn"><i class="fas fa-download"></i> Descargar Todo (CSV)</a>
+                    <button id="limpiarBtn" class="descarga-btn"><i class="fas fa-trash-alt"></i> Limpiar TODO</button>
+                </div>
+                <div id="bot-notificaciones"></div>
+                <div id="tabsContentContainer"></div>
+            </div>
+        </section>
+
+         <section id="client-dashboard" class="content-section">
+            <h2>Mis Cuentas Contratadas</h2>
+             <p id="client-welcome">Bienvenido/a, <strong id="client-email-display"></strong>!</p>
+            <div id="client-account-list">
+                <p>Cargando tus cuentas...</p>
+            </div>
+            <button id="clientLogoutBtn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
+        </section>
+
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // ===================================
+        // CREDENCIALES, CLAVES Y STORAGE
+        // ===================================
+        const CREDENTIALS_KEY = 'adminCredentials';
+        const STORAGE_KEY = 'adminAccounts';
+        const CLIENT_PASS_KEY = 'clientAccessPass';
+        const THEME_KEY = 'adminTheme';
+        const CAPACITY_KEY = 'accountCapacity'; // CLAVE PARA LA CAPACIDAD
+        const TIPO_CUENTAS = ['netflix', 'disney', 'hbo', 'amazon', 'canva', 'revendedores'];
+
+        let ADMIN_USER;
+        let ADMIN_PASS;
+        let CLIENT_ACCESS_PASS;
+        let currentAccounts = [];
+        let accountCapacity = {}; 
+        let activeAdminTab = 'netflix';
+        let loggedClientEmail = null;
+
+        // ===================================
+        // SELECTORES DEL DOM
+        // ===================================
+        const container = document.querySelector('.container');
+        const mainNav = document.getElementById('main-nav');
+        const configSidebar = document.getElementById('config-sidebar');
+        const showConfigBtn = document.getElementById('showConfigBtn');
+        const closeConfigBtn = document.getElementById('closeConfigBtn');
+        const searchInput = document.getElementById('searchInput');
+        const adminTabsNav = document.getElementById('adminTabsNav');
+        const tabsContentContainer = document.getElementById('tabsContentContainer');
+        const botNotificaciones = document.getElementById('bot-notificaciones');
+
+        // Selectores de Configuración
+        const newAdminUser = document.getElementById('newAdminUser');
+        const newAdminPass = document.getElementById('newAdminPass');
+        const saveAdminCredentialsBtn = document.getElementById('saveAdminCredentialsBtn');
+        const adminConfigMessage = document.getElementById('adminConfigMessage');
+        const newClientPass = document.getElementById('newClientPass');
+        const saveClientPassBtn = document.getElementById('saveClientPassBtn');
+        const clientConfigMessage = document.getElementById('clientConfigMessage');
+        const themeRedBtn = document.getElementById('themeRedBtn');
+        const themeBlueBtn = document.getElementById('themeBlueBtn');
+        const capacityConfigList = document.getElementById('capacity-config-list'); 
+        const saveCapacityBtn = document.getElementById('saveCapacityBtn'); 
+        const capacityConfigMessage = document.getElementById('capacityConfigMessage'); 
+        const capacityDisplayContainer = document.getElementById('capacity-display-container'); 
+        
+        // Selectores del nuevo botón flotante de Stock
+        const floatingStockButton = document.getElementById('floating-stock-button');
+        const stockTooltip = document.getElementById('stock-tooltip');
+        const stockList = document.getElementById('stock-list');
+
+
+        // ===================================
+        // UTILIDADES Y ALMACENAMIENTO LOCAL
+        // ===================================
+
+        /** Inicializa la capacidad predeterminada */
+        function getDefaultCapacity() {
+            const defaults = {};
+            TIPO_CUENTAS.forEach(tipo => {
+                defaults[tipo] = (tipo === 'revendedores' || tipo === 'canva') ? 0 : 5; // 5 por defecto, 0 para ilimitado
+            });
+            return defaults;
+        }
+
+        /** Carga todas las configuraciones y datos iniciales */
+        function loadSettings() {
+             // 1. Cargar Credenciales
+            const storedCreds = JSON.parse(localStorage.getItem(CREDENTIALS_KEY));
+            ADMIN_USER = storedCreds ? storedCreds.user : 'admin';
+            ADMIN_PASS = storedCreds ? storedCreds.pass : '123';
+            
+             // 2. Cargar Contraseña Cliente
+            CLIENT_ACCESS_PASS = localStorage.getItem(CLIENT_PASS_KEY) || '123';
+            
+             // 3. Cargar Capacidad 
+            try {
+                const storedCapacity = JSON.parse(localStorage.getItem(CAPACITY_KEY));
+                accountCapacity = storedCapacity ? storedCapacity : getDefaultCapacity();
+            } catch (e) {
+                console.error("Error al cargar capacidad:", e);
+                accountCapacity = getDefaultCapacity();
+            }
+
+             // 4. Cargar Cuentas
+            try {
+                const data = localStorage.getItem(STORAGE_KEY);
+                currentAccounts = data ? JSON.parse(data) : [];
+            } catch (e) {
+                console.error("Error al cargar cuentas:", e);
+                currentAccounts = [];
+            }
+             
+            // 5. Aplicar Tema
+            const savedTheme = localStorage.getItem(THEME_KEY) || 'red';
+            applyTheme(savedTheme, false);
+            
+            // 6. Inicializar campos de configuración con valores actuales
+            newAdminUser.placeholder = `Usuario actual: ${ADMIN_USER}`;
+            newAdminPass.placeholder = `Contraseña actual (vacío si no cambia)`;
+            newClientPass.placeholder = `Contraseña actual: ${CLIENT_ACCESS_PASS}`;
+
+            // 7. Rellenar la lista de configuración de capacidad
+            renderCapacityConfig();
+            
+            // 8. Ocultar el botón de stock por defecto (solo visible en Admin)
+            floatingStockButton.style.display = 'none';
+        }
+        
+        /** Guarda las cuentas en localStorage */
+        function saveAccounts() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(currentAccounts));
+            } catch (e) {
+                console.error("Error al guardar cuentas:", e);
+            }
+        }
+
+        /** Formatea una fecha a DD/MM/AAAA */
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+        /** Calcula la fecha de corte (+30 días), solo si no es 'revendedores' */
+        function calcularFechaCorte(fechaRegistro, tipoCuenta) {
+            if (tipoCuenta === 'revendedores') { return 'N/A'; }
+            const date = new Date(fechaRegistro);
+            date.setDate(date.getDate() + 30);
+            return formatDate(date);
+        }
+
+        /** Obtiene el estado actual: Activo, Cortado o por Vencer (basado en la fecha de corte) */
+        function getStatus(account) {
+            if (account.estado === 'cortado') return 'cortado';
+            if (account.tipo_cuenta === 'revendedores') return 'activo';
+
+            const fechaCorte = calcularFechaCorte(account.fecha_registro, account.tipo_cuenta);
+            if (fechaCorte === 'N/A') return 'activo';
+
+            const [day, month, year] = fechaCorte.split('/').map(Number);
+            const corteDate = new Date(year, month - 1, day);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (today >= corteDate) {
+                // Actualiza el estado en el array si el corte ya pasó.
+                const index = currentAccounts.findIndex(a => a.id === account.id);
+                if (index !== -1 && currentAccounts[index].estado !== 'cortado') {
+                    currentAccounts[index].estado = 'cortado';
+                    saveAccounts();
+                }
+                return 'cortado';
+            }
+            return 'activo';
+        }
+
+        /** Función para mostrar la vista (selector, admin-login, client-login, container) */
+        function showView(viewId) {
+            const views = [
+                document.getElementById('login-selector'),
+                document.getElementById('admin-login'),
+                document.getElementById('client-login'),
+                container,
+                document.getElementById('client-dashboard')
+            ];
+            views.forEach(view => {
+                if (view && view.id === viewId) {
+                    view.classList.add('active');
+                    view.classList.add('visible');
+                    view.style.display = (viewId === 'login-selector' || viewId.includes('login')) ? 'flex' : 'block';
+                } else if (view) {
+                    view.classList.remove('active');
+                    view.classList.remove('visible');
+                    view.style.display = 'none';
+                }
+            });
+
+            if (viewId === 'container' || viewId === 'client-dashboard') {
+                container.style.display = 'block';
+                container.classList.add('visible');
+                document.getElementById('main-title').style.display = 'block';
+            } else {
+                document.getElementById('main-title').style.display = 'none';
+            }
+            
+            // Control del botón flotante de Stock
+            if (viewId === 'container') {
+                mainNav.classList.add('visible');
+                floatingStockButton.style.display = 'flex';
+                renderStockTooltip();
+            } else {
+                mainNav.classList.remove('visible');
+                floatingStockButton.style.display = 'none';
+                stockTooltip.classList.remove('visible');
+            }
+            
+            closeConfigSidebar();
+        }
+
+        // ===================================
+        // FUNCIONES DE CONFIGURACIÓN
+        // ===================================
+
+        function openConfigSidebar() {
+            renderCapacityConfig(); // Asegura que los campos de capacidad estén actualizados
+            configSidebar.classList.add('visible');
+            document.body.classList.add('config-open');
+        }
+
+        function closeConfigSidebar() {
+            configSidebar.classList.remove('visible');
+            document.body.classList.remove('config-open');
+        }
+        
+        function showConfigMessage(element, message, type = 'success', duration = 3000) {
+            element.textContent = message;
+            element.className = `config-message ${type}`;
+            element.style.display = 'block';
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, duration);
+        }
+        
+        function applyTheme(theme, save = true) {
+            if (theme === 'red') {
+                document.body.classList.remove('theme-blue');
+                themeRedBtn.classList.add('active');
+                themeBlueBtn.classList.remove('active');
+            } else {
+                document.body.classList.add('theme-blue');
+                themeRedBtn.classList.remove('active');
+                themeBlueBtn.classList.remove('active');
+            }
+            if (save) {
+                localStorage.setItem(THEME_KEY, theme);
+            }
+        }
+        
+        /** Rellena el formulario de configuración de capacidad */
+        function renderCapacityConfig() {
+            capacityConfigList.innerHTML = '';
+            TIPO_CUENTAS.forEach(tipo => {
+                if (tipo === 'revendedores') return; // Revendedores no usa slots
+                const div = document.createElement('div');
+                div.className = 'capacity-config-container';
+                div.innerHTML = `
+                    <label for="capacity-${tipo}">${tipo.toUpperCase()} Máx:</label>
+                    <input type="number" id="capacity-${tipo}" min="0" value="${accountCapacity[tipo] || 5}">
+                `;
+                capacityConfigList.appendChild(div);
+            });
+        }
+        
+        /** Muestra la capacidad actual en el Panel de Administración */
+        function renderCapacityDisplay() {
+             capacityDisplayContainer.innerHTML = '';
+             TIPO_CUENTAS.forEach(tipo => {
+                 if (tipo === 'revendedores') return;
+                 const maxCapacity = accountCapacity[tipo] || 0;
+                 const currentCount = currentAccounts.filter(a => a.tipo_cuenta === tipo).length;
+                 const freeSlots = Math.max(0, maxCapacity - currentCount);
+
+                 let boxesHtml = '';
+                 // Casillas ocupadas (rojo)
+                 for (let i = 0; i < currentCount; i++) {
+                     boxesHtml += '<div class="box occupied" title="Ocupado"></div>';
+                 }
+                 // Casillas libres (verde), solo si hay límite
+                 if (maxCapacity > 0) {
+                     for (let i = 0; i < freeSlots; i++) {
+                         boxesHtml += '<div class="box free" title="Libre"></div>';
+                     }
+                 }
+                 
+                 const statusText = maxCapacity > 0 
+                     ? `${currentCount} / ${maxCapacity} (${freeSlots} libres)`
+                     : `${currentCount} Cuentas (Ilimitado)`;
+
+                 const item = document.createElement('div');
+                 item.className = 'capacity-item';
+                 item.innerHTML = `
+                     <h4>${tipo.toUpperCase()} <span style="font-weight: normal; color: #555; font-size: 0.8em;">${statusText}</span></h4>
+                     <div class="capacity-boxes">${boxesHtml}</div>
+                 `;
+                 capacityDisplayContainer.appendChild(item);
+             });
+             renderStockTooltip(); // Actualiza el tooltip cada vez que se actualiza el display
+        }
+        
+        // ===================================
+        // FUNCIONES DE STOCK FLOTANTE (NUEVO)
+        // ===================================
+        
+        /** Calcula el stock disponible para cada tipo de cuenta */
+        function calculateAvailableStock() {
+            const stockData = {};
+            TIPO_CUENTAS.forEach(tipo => {
+                 if (tipo === 'revendedores') return;
+                 const maxCapacity = accountCapacity[tipo] || 0;
+                 const currentCount = currentAccounts.filter(a => a.tipo_cuenta === tipo).length;
+                 
+                 if (maxCapacity === 0) {
+                     stockData[tipo] = { free: '∞', color: 'stock-available' }; // Ilimitado
+                 } else {
+                     const freeSlots = Math.max(0, maxCapacity - currentCount);
+                     let colorClass;
+                     if (freeSlots === 0) {
+                         colorClass = 'stock-none';
+                     } else if (freeSlots <= 2) {
+                         colorClass = 'stock-limited';
+                     } else {
+                         colorClass = 'stock-available';
+                     }
+                     stockData[tipo] = { free: freeSlots, color: colorClass };
+                 }
+            });
+            return stockData;
+        }
+        
+        /** Renderiza el contenido del tooltip de stock */
+        function renderStockTooltip() {
+            const stockData = calculateAvailableStock();
+            stockList.innerHTML = '';
+            
+            let html = '';
+            Object.keys(stockData).forEach(tipo => {
+                const data = stockData[tipo];
+                html += `
+                    <li>
+                        ${tipo.toUpperCase()}
+                        <span class="${data.color}">${data.free}</span>
+                    </li>
+                `;
+            });
+            stockList.innerHTML = html;
+        }
+        
+        // ===================================
+        // MANEJADORES DE EVENTOS DE CONFIGURACIÓN
+        // ===================================
+        
+        showConfigBtn.addEventListener('click', openConfigSidebar);
+        closeConfigBtn.addEventListener('click', closeConfigSidebar);
+        
+        themeRedBtn.addEventListener('click', () => applyTheme('red'));
+        themeBlueBtn.addEventListener('click', () => applyTheme('blue'));
+
+        saveAdminCredentialsBtn.addEventListener('click', () => {
+            const newUser = newAdminUser.value.trim();
+            const newPass = newAdminPass.value.trim();
+            let changed = false;
+
+            if (newUser && newUser !== ADMIN_USER) {
+                ADMIN_USER = newUser;
+                newAdminUser.value = '';
+                newAdminUser.placeholder = `Usuario actual: ${ADMIN_USER}`;
+                changed = true;
+            }
+            
+            if (newPass) {
+                ADMIN_PASS = newPass;
+                newAdminPass.value = '';
+                changed = true;
+            }
+            
+            if (changed) {
+                localStorage.setItem(CREDENTIALS_KEY, JSON.stringify({ user: ADMIN_USER, pass: ADMIN_PASS }));
+                showConfigMessage(adminConfigMessage, '✅ Credenciales de Admin actualizadas.', 'success');
+            } else {
+                showConfigMessage(adminConfigMessage, 'ℹ️ No se realizaron cambios.', 'error');
+            }
+        });
+
+        saveClientPassBtn.addEventListener('click', () => {
+            const newPass = newClientPass.value.trim();
+            
+            if (newPass) {
+                CLIENT_ACCESS_PASS = newPass;
+                localStorage.setItem(CLIENT_PASS_KEY, newPass);
+                newClientPass.value = '';
+                newClientPass.placeholder = `Contraseña actual: ${CLIENT_ACCESS_PASS}`;
+                showConfigMessage(clientConfigMessage, '✅ Clave de Acceso Cliente actualizada.', 'success');
+            } else {
+                 showConfigMessage(clientConfigMessage, '❌ La contraseña no puede estar vacía.', 'error');
+            }
+        });
+        
+        // Manejador de guardado de capacidad
+        saveCapacityBtn.addEventListener('click', () => {
+            let changesMade = false;
+            TIPO_CUENTAS.forEach(tipo => {
+                 if (tipo === 'revendedores') return;
+                const input = document.getElementById(`capacity-${tipo}`);
+                if (input) {
+                    const newValue = parseInt(input.value, 10);
+                    if (newValue >= 0 && accountCapacity[tipo] !== newValue) {
+                        accountCapacity[tipo] = newValue;
+                        changesMade = true;
+                    }
+                }
+            });
+
+            if (changesMade) {
+                localStorage.setItem(CAPACITY_KEY, JSON.stringify(accountCapacity));
+                showConfigMessage(capacityConfigMessage, '✅ Capacidades máximas actualizadas.', 'success');
+                renderCapacityDisplay(); // Actualizar el display y el tooltip
+            } else {
+                showConfigMessage(capacityConfigMessage, 'ℹ️ No se realizaron cambios.', 'error');
+            }
+        });
+        
+        // Manejador de eventos para el botón flotante de stock
+        floatingStockButton.addEventListener('click', () => {
+             stockTooltip.classList.toggle('visible');
+             // Asegúrate de que el contenido esté actualizado al abrir
+             if (stockTooltip.classList.contains('visible')) {
+                 renderStockTooltip();
+             }
+        });
+
+
+        // ===================================
+        // FUNCIONES DE VISTA (ADMIN)
+        // ===================================
+
+        /** Muestra la sección del panel de administración (Registro o Panel) */
+        function showSectionInContainer(sectionId) {
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(sec => sec.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+
+            const navLinks = document.querySelectorAll('#main-nav a');
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(sectionId)) {
+                    link.classList.add('active');
+                }
+            });
+
+            if (searchInput) {
+                 // El buscador solo es visible en la sección admin
+                 searchInput.parentElement.style.display = (sectionId === 'admin') ? 'block' : 'none';
+                 searchInput.value = '';
+            }
+            
+            // El tooltip de stock se cierra al cambiar de sección, excepto en 'admin' y 'clientes'
+            if (sectionId === 'clientes' || sectionId === 'admin') {
+                floatingStockButton.style.display = 'flex';
+                renderStockTooltip(); // Lo mantenemos visible y actualizado
+            } else {
+                 floatingStockButton.style.display = 'none';
+            }
+            
+            stockTooltip.classList.remove('visible'); // Lo cerramos al cambiar de sección
+
+            if (sectionId === 'admin') {
+                 renderCapacityDisplay(); // Muestra el contador de capacidad
+                 setupAdminTabs();
+                 mostrarAdminPestana(activeAdminTab);
+                 ejecutarBotNotificaciones(currentAccounts);
+            }
+            closeConfigSidebar(); // Asegura que el sidebar se cierre al navegar
+        }
+
+        /** Filtra las cuentas según el término de búsqueda */
+        function filterAccounts(accounts, searchTerm) {
+            if (!searchTerm) return accounts;
+            const term = searchTerm.toLowerCase();
+            return accounts.filter(account => 
+                account.nombre.toLowerCase().includes(term) ||
+                account.email.toLowerCase().includes(term) ||
+                account.whatsapp.includes(term)
+            );
+        }
+
+        /** Crea el HTML para una lista de cuentas en el panel de administrador */
+        function generarContenidoAdminPestana(tipo) {
+            const searchTerm = searchInput ? searchInput.value.trim() : '';
+            let filteredByType = currentAccounts.filter(a => a.tipo_cuenta === tipo);
+            let accountsToDisplay = filterAccounts(filteredByType, searchTerm);
+            accountsToDisplay.sort((a, b) => new Date(a.fecha_registro) - new Date(b.fecha_registro));
+
+            if (accountsToDisplay.length === 0) {
+                 if (searchTerm) {
+                     return `<div class="no-results"><i class="fas fa-search-minus"></i> No se encontraron resultados para "${searchTerm}" en ${tipo.toUpperCase()}.</div>`;
+                 }
+                return `<p>No hay cuentas registradas para ${tipo.toUpperCase()}.</p>`;
+            }
+
+            let html = `<ul class="listado-admin">`;
+            accountsToDisplay.forEach(account => {
+                const status = getStatus(account);
+                const statusClass = status === 'activo' ? 'estado-activo' : 'estado-cortado';
+                const fechaCorte = calcularFechaCorte(account.fecha_registro, account.tipo_cuenta);
+
+                html += `
+                    <li class="${statusClass}" data-id="${account.id}" data-type="${account.tipo_cuenta}">
+                        <h3>${account.nombre} <span class="estado-texto">(${status.toUpperCase()})</span></h3>
+
+                        <div class="data-row">
+                            <label>Reg. / Corte:</label>
+                            <span data-field="fecha_registro">${formatDate(account.fecha_registro)}</span>
+                            <span style="font-weight: bold; color: ${status === 'cortado' ? '#dc3545' : '#444'}"> / ${fechaCorte}</span>
+                        </div>
+
+                        <div class="data-row">
+                            <label for="input-email-${account.id}">Email (Login):</label>
+                            <input type="email" id="input-email-${account.id}" value="${account.email}" data-field="email" disabled>
+                        </div>
+
+                        <div class="data-row">
+                            <label for="input-password-${account.id}">Contraseña:</label>
+                            <input type="text" id="input-password-${account.id}" value="${account.password}" data-field="password" disabled>
+                        </div>
+
+                        <div class="data-row">
+                            <label for="input-perfiles-${account.id}">Perfiles:</label>
+                            <input type="text" id="input-perfiles-${account.id}" value="${account.perfiles || ''}" data-field="perfiles" disabled>
+                        </div>
+
+                        <div class="data-row">
+                            <label for="select-estado-${account.id}">Estado:</label>
+                            <select id="select-estado-${account.id}" data-field="estado" disabled>
+                                <option value="activo" ${account.estado === 'activo' ? 'selected' : ''}>Activo</option>
+                                <option value="cortado" ${account.estado === 'cortado' ? 'selected' : ''}>Cortado</option>
+                            </select>
+                        </div>
+
+                        <div class="data-row">
+                            <label for="input-whatsapp-${account.id}">WhatsApp:</label>
+                            <input type="tel" id="input-whatsapp-${account.id}" value="${account.whatsapp}" data-field="whatsapp" disabled>
+                        </div>
+
+                        <div class="actions">
+                            <button class="btn-editar" data-id="${account.id}"><i class="fas fa-edit"></i> Editar</button>
+                            <button class="btn-guardar" data-id="${account.id}" style="display:none;"><i class="fas fa-save"></i> Guardar</button>
+                            <button class="btn-eliminar" data-id="${account.id}"><i class="fas fa-trash-alt"></i> Eliminar</button>
+                        </div>
+                    </li>
+                `;
+            });
+
+            html += `</ul>`;
+            return html;
+        }
+
+        /** Inicializa los botones de las pestañas */
+        function setupAdminTabs() {
+            adminTabsNav.innerHTML = '';
+
+            TIPO_CUENTAS.forEach(tipo => {
+                const count = currentAccounts.filter(a => a.tipo_cuenta === tipo).length;
+                const tabButton = document.createElement('button');
+                tabButton.className = `tab-button ${tipo === activeAdminTab ? 'active' : ''}`;
+                tabButton.textContent = `${tipo.toUpperCase()} (${count})`;
+                tabButton.setAttribute('data-tab', tipo);
+                tabButton.addEventListener('click', () => mostrarAdminPestana(tipo));
+                adminTabsNav.appendChild(tabButton);
+            });
+            tabsContentContainer.innerHTML = '';
+        }
+
+        /** Muestra el contenido de la pestaña seleccionada */
+        function mostrarAdminPestana(tipo) {
+            activeAdminTab = tipo;
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                if (btn.getAttribute('data-tab') === tipo) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            tabsContentContainer.innerHTML = '';
+            const tabContent = document.createElement('div');
+            tabContent.id = `tab-content-${tipo}`;
+            tabContent.className = 'tab-content active';
+            tabContent.innerHTML = generarContenidoAdminPestana(tipo);
+            tabsContentContainer.appendChild(tabContent);
+
+            attachAdminEventListeners(tabContent);
+        }
+
+        /** Manejar la búsqueda */
+        function handleSearch() {
+             mostrarAdminPestana(activeAdminTab);
+        }
+
+        /** Adjunta los listeners de eventos para los botones de Editar/Guardar/Eliminar */
+        function attachAdminEventListeners(container) {
+            container.querySelectorAll('.btn-editar').forEach(button => {
+                button.addEventListener('click', handleEditAccount);
+            });
+            container.querySelectorAll('.btn-guardar').forEach(button => {
+                button.addEventListener('click', handleSaveAccount);
+            });
+            container.querySelectorAll('.btn-eliminar').forEach(button => {
+                button.addEventListener('click', handleDeleteAccount);
+            });
+        }
+
+        /** Bot de Notificaciones */
+        function ejecutarBotNotificaciones(accounts) {
+            botNotificaciones.innerHTML = '';
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            let cortadasList = '';
+            let count = 0;
+
+            accounts.forEach(account => {
+                if (account.tipo_cuenta === 'revendedores') return;
+                const fechaCorteStr = calcularFechaCorte(account.fecha_registro, account.tipo_cuenta);
+                if (fechaCorteStr === 'N/A') return;
+
+                const [day, month, year] = fechaCorteStr.split('/').map(Number);
+                const corteDate = new Date(year, month - 1, day);
+                corteDate.setHours(0, 0, 0, 0);
+
+                if (today >= corteDate && account.estado !== 'cortado') {
+                    count++;
+                    const message = encodeURIComponent(`Hola ${account.nombre}, tu cuenta de *${account.tipo_cuenta.toUpperCase()}* ha sido cortada el *${fechaCorteStr}*. Por favor, contáctanos para la renovación.`);
+                    const whatsappUrl = `https://wa.me/${account.whatsapp}?text=${message}`;
+
+                    cortadasList += `
+                        <li>
+                            ${account.nombre} (${account.tipo_cuenta.toUpperCase()}) -
+                            <a href="${whatsappUrl}" target="_blank" title="Enviar mensaje de renovación">
+                                Contactar <i class="fab fa-whatsapp"></i>
+                            </a>
+                        </li>
+                    `;
+                    const index = currentAccounts.findIndex(a => a.id === account.id);
+                     if (index !== -1 && currentAccounts[index].estado !== 'cortado') {
+                         currentAccounts[index].estado = 'cortado';
+                     }
+                }
+            });
+
+            saveAccounts();
+
+            if (count > 0) {
+                botNotificaciones.style.display = 'block';
+                botNotificaciones.innerHTML = `
+                    <strong>⚠️ ATENCIÓN: ${count} CUENTA(S) EXPIRADA(S)</strong>
+                    <p>Las siguientes cuentas han superado su fecha de corte y su estado se ha actualizado a *CORTADO*. Debes contactar a los clientes:</p>
+                    <ul>${cortadasList}</ul>
+                `;
+            } else {
+                botNotificaciones.style.display = 'none';
+            }
+        }
+
+        // ===================================
+        // MANEJADORES DE EVENTOS ADMIN
+        // ===================================
+
+        document.getElementById('formularioRegistro').addEventListener('submit', function(e) {
+             e.preventDefault();
+             
+             const newAccountType = document.getElementById('tipo_cuenta').value;
+             const maxCapacity = accountCapacity[newAccountType] || 0;
+             const currentCount = currentAccounts.filter(a => a.tipo_cuenta === newAccountType).length;
+
+             // Validación de capacidad
+             if (maxCapacity > 0 && currentCount >= maxCapacity) {
+                 alert(`⛔ Error: Ya se alcanzó la capacidad máxima (${maxCapacity}) para ${newAccountType.toUpperCase()}.`);
+                 return;
+             }
+
+            const newAccount = {
+                id: Date.now(),
+                tipo_cuenta: newAccountType,
+                nombre: document.getElementById('nombre').value,
+                whatsapp: document.getElementById('whatsapp').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                perfiles: document.getElementById('perfiles').value,
+                estado: document.getElementById('estado').value,
+                fecha_registro: new Date().toISOString()
+            };
+
+            currentAccounts.push(newAccount);
+            saveAccounts();
+            
+            if (newAccount.tipo_cuenta === activeAdminTab) {
+                mostrarAdminPestana(activeAdminTab);
+            }
+            setupAdminTabs();
+            ejecutarBotNotificaciones(currentAccounts);
+            renderCapacityDisplay(); // Actualizar el display de capacidad y el tooltip
+
+            this.reset();
+            document.getElementById('resultadoRegistro').style.display = 'block';
+            
+            const fechaCorte = calcularFechaCorte(newAccount.fecha_registro, newAccount.tipo_cuenta);
+            const mensajeWhatsApp = encodeURIComponent(
+                `🎉 ¡Bienvenido/a, ${newAccount.nombre}!\n\n` +
+                `Tus datos de acceso a *${newAccount.tipo_cuenta.toUpperCase()}* son:\n\n` +
+                `📧 *Email:* ${newAccount.email}\n` +
+                `🔑 *Contraseña:* ${newAccount.password}\n` +
+                (newAccount.perfiles ? `👤 *Perfiles:* ${newAccount.perfiles}\n` : '') +
+                (newAccount.tipo_cuenta !== 'revendedores' ? `📅 *Fecha de Corte:* ${fechaCorte}\n\n` : '\n') +
+                `¡Disfruta tu servicio!`
+            );
+            
+            const whatsappLink = document.getElementById('whatsappLink');
+            whatsappLink.href = `https://wa.me/${newAccount.whatsapp}?text=${mensajeWhatsApp}`;
+            
+            setTimeout(() => {
+                document.getElementById('resultadoRegistro').style.display = 'none';
+            }, 10000); 
+        });
+
+        function handleEditAccount(e) {
+            const li = e.target.closest('li');
+            li.querySelectorAll('input, select').forEach(input => {
+                input.disabled = false;
+                input.style.border = '1px solid ' + getComputedStyle(document.body).getPropertyValue('--primary-color');
+            });
+            li.querySelector('.btn-editar').style.display = 'none';
+            li.querySelector('.btn-guardar').style.display = 'inline-flex';
+        }
+
+        function handleSaveAccount(e) {
+            const li = e.target.closest('li');
+            const accountId = Number(li.getAttribute('data-id'));
+            const accountIndex = currentAccounts.findIndex(a => a.id === accountId);
+            if (accountIndex === -1) return;
+            const updatedAccount = { ...currentAccounts[accountIndex] };
+            li.querySelectorAll('input, select').forEach(input => {
+                const field = input.getAttribute('data-field');
+                if (field) { updatedAccount[field] = input.value; }
+                input.disabled = true;
+                input.style.border = '1px solid #ccc';
+            });
+            currentAccounts[accountIndex] = updatedAccount;
+            saveAccounts();
+            li.querySelector('.btn-editar').style.display = 'inline-flex';
+            li.querySelector('.btn-guardar').style.display = 'none';
+            mostrarAdminPestana(activeAdminTab);
+            ejecutarBotNotificaciones(currentAccounts);
+            renderCapacityDisplay(); // Actualizar el display de capacidad y el tooltip
+        }
+
+        function handleDeleteAccount(e) {
+            const li = e.target.closest('li');
+            const accountId = Number(li.getAttribute('data-id'));
+            if (confirm('¿Estás seguro de que quieres eliminar esta cuenta? Esta acción es irreversible.')) {
+                currentAccounts = currentAccounts.filter(a => a.id !== accountId);
+                saveAccounts();
+                setupAdminTabs();
+                mostrarAdminPestana(activeAdminTab);
+                ejecutarBotNotificaciones(currentAccounts);
+                renderCapacityDisplay(); // Actualizar el display de capacidad y el tooltip
+            }
+        }
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', handleSearch);
+        }
+
+        document.getElementById('descargarBtn').addEventListener('click', function(e) {
+             e.preventDefault();
+             if (currentAccounts.length === 0) {
+                 alert('No hay cuentas para descargar.');
+                 return;
+             }
+
+             const header = ['ID', 'Tipo', 'Nombre', 'WhatsApp', 'Email', 'Contraseña', 'Perfiles', 'Estado', 'Fecha Registro', 'Fecha Corte'];
+
+             const rows = currentAccounts.map(account => {
+                 const fechaCorte = calcularFechaCorte(account.fecha_registro, account.tipo_cuenta);
+                 return [
+                     account.id,
+                     account.tipo_cuenta.toUpperCase(),
+                     account.nombre,
+                     account.whatsapp,
+                     account.email,
+                     account.password,
+                     account.perfiles,
+                     account.estado.toUpperCase(),
+                     formatDate(account.fecha_registro),
+                     fechaCorte
+                 ].map(item => `"${String(item).replace(/"/g, '""')}"`).join(',');
+             });
+
+             const csvContent = "data:text/csv;charset=utf-8,"
+                                 + header.join(',') + "\n"
+                                 + rows.join("\n");
+
+             const encodedUri = encodeURI(csvContent);
+             const link = document.createElement('a');
+             link.setAttribute('href', encodedUri);
+             link.setAttribute('download', 'Cuentas_Admin.csv');
+             document.body.appendChild(link);
+             link.click();
+             document.body.removeChild(link);
+        });
+
+        document.getElementById('limpiarBtn').addEventListener('click', function() {
+            if (confirm('⚠️ ¡ADVERTENCIA! ¿Estás ABSOLUTAMENTE seguro de que quieres ELIMINAR TODAS las cuentas? Esta acción es irreversible.')) {
+                 if (confirm('Última confirmación: Si eliminas todo, la aplicación quedará vacía. ¿Continuar?')) {
+                     localStorage.removeItem(STORAGE_KEY);
+                     currentAccounts = [];
+                     setupAdminTabs();
+                     mostrarAdminPestana('netflix');
+                     ejecutarBotNotificaciones([]);
+                     renderCapacityDisplay(); // Actualizar el display de capacidad y el tooltip
+                     alert('Todas las cuentas han sido eliminadas.');
+                     showSectionInContainer('clientes');
+                 }
+            }
+        });
+
+
+        // ===================================
+        // MANEJADORES DE LOGIN
+        // ===================================
+
+        document.querySelectorAll('.back-to-selector').forEach(btn => {
+            btn.addEventListener('click', () => {
+                showView('login-selector');
+                document.getElementById('login-error').style.display = 'none';
+                document.getElementById('client-login-error').style.display = 'none';
+                document.getElementById('loginForm').reset();
+                document.getElementById('clientLoginForm').reset();
+            });
+        });
+        document.getElementById('showAdminLoginBtn').addEventListener('click', () => {
+            showView('admin-login');
+        });
+        document.getElementById('showClientLoginBtn').addEventListener('click', () => {
+            showView('client-login');
+        });
+
+        /** Login de Administrador */
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password_login').value;
+            const errorMsg = document.getElementById('login-error');
+
+            if (username === ADMIN_USER && password === ADMIN_PASS) {
+                errorMsg.style.display = 'none';
+                showView('container');
+                showSectionInContainer('clientes');
+            } else {
+                errorMsg.style.display = 'block';
+            }
+        });
+
+        /** Logout de Administrador */
+        document.getElementById('adminLogoutBtn').addEventListener('click', () => {
+            showView('login-selector');
+        });
+
+        /** Navegación en el panel de administrador (Registro y Admin) */
+        document.getElementById('nav-clientes').addEventListener('click', (e) => {
+            e.preventDefault();
+            showSectionInContainer('clientes');
+        });
+
+        document.getElementById('nav-admin').addEventListener('click', (e) => {
+            e.preventDefault();
+            showSectionInContainer('admin');
+        });
+
+        // ===================================
+        // MANEJADORES DE CLIENTE
+        // ===================================
+
+        /** Login de Cliente */
+        document.getElementById('clientLoginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('client_email').value.toLowerCase();
+            const password = document.getElementById('client_password').value;
+            const errorMsg = document.getElementById('client-login-error');
+
+            // 1. Verificar la clave de acceso general
+            if (password !== CLIENT_ACCESS_PASS) {
+                 errorMsg.textContent = '❌ La clave de acceso es incorrecta.';
+                 errorMsg.style.display = 'block';
+                 return;
+            }
+
+            // 2. Filtrar por cuentas del cliente
+            const clientAccounts = currentAccounts.filter(a =>
+                a.email.toLowerCase() === email
+            );
+
+            if (clientAccounts.length > 0) {
+                errorMsg.style.display = 'none';
+                loggedClientEmail = email;
+                showClientDashboard(clientAccounts);
+            } else {
+                errorMsg.textContent = '❌ No se encontraron cuentas asociadas a este correo.';
+                errorMsg.style.display = 'block';
+            }
+        });
+
+        /** Muestra el dashboard del cliente con sus cuentas */
+        function showClientDashboard(accounts) {
+            showView('client-dashboard');
+
+            document.getElementById('client-email-display').textContent = loggedClientEmail;
+
+            const listContainer = document.getElementById('client-account-list');
+            listContainer.innerHTML = '';
+            
+             // Mensaje de Advertencia
+            listContainer.innerHTML += `
+                <div class="security-alert">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    <div>
+                        <strong>AVISO IMPORTANTE DE SEGURIDAD:</strong>
+                        Para ver la bandeja de entrada de tu email (${loggedClientEmail}), debes ingresar a la plataforma de tu proveedor (ej: Gmail, Outlook) usando la cuenta y contraseña que te proporcionamos. Por seguridad, esta herramienta *no* puede acceder a tu bandeja de entrada directamente.
+                    </div>
+                </div>
+            `;
+
+            if (accounts.length === 0) {
+                listContainer.innerHTML += '<p style="margin-top: 20px;">No tienes cuentas activas asociadas a este correo.</p>';
+                return;
+            }
+
+            const ul = document.createElement('ul');
+            ul.className = 'account-list';
+
+            accounts.forEach(account => {
+                const status = getStatus(account);
+                const fechaCorte = calcularFechaCorte(account.fecha_registro, account.tipo_cuenta);
+
+                const li = document.createElement('li');
+                li.className = `account-item ${status}`;
+                li.innerHTML = `
+                    <div class="account-info">
+                        <strong>${account.tipo_cuenta.toUpperCase()}</strong>
+                        <span>Perfiles: ${account.perfiles || 'N/A'}</span>
+                        <span>Contraseña: ${account.password}</span>
+                        <span>Vencimiento: ${fechaCorte}</span>
+                    </div>
+                    <div class="account-status ${status}">
+                        ${status === 'activo' ? 'ACTIVA' : 'CORTADA'}
+                    </div>
+                     <div class="account-actions">
+                         <a href="https://mail.google.com/mail/" target="_blank" class="btn-check-email">
+                            <i class="fas fa-envelope"></i> Revisar Email
+                         </a>
+                    </div>
+                `;
+                ul.appendChild(li);
+            });
+
+            listContainer.appendChild(ul);
+        }
+
+        /** Logout de Cliente */
+        document.getElementById('clientLogoutBtn').addEventListener('click', () => {
+            loggedClientEmail = null;
+            showView('login-selector');
+        });
+
+        // ===================================
+        // INICIALIZACIÓN FINAL
+        // ===================================
+        loadSettings();
+        showView('login-selector');
+    });
+</script>
+
+</body>
+</html>

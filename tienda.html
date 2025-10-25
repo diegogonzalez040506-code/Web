@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda de Cuentas Premium - ¡Compra Ahora!</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --shop-primary-color: #27ae60; /* Verde atractivo */
+            --shop-secondary-color: #34495e;
+            --shop-background: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: var(--shop-background);
+            color: var(--shop-secondary-color);
+            line-height: 1.6;
+        }
+
+        .header {
+            background-color: var(--shop-secondary-color);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.2em;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .tasa-usdt-box {
+            background-color: #38bdf8; /* Color de Tether/Binance */
+            color: white;
+            padding: 10px 20px;
+            margin: 10px auto;
+            max-width: 400px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .tasa-usdt-box i {
+            margin-right: 8px;
+        }
+        
+        #usdt-price {
+            display: inline-block;
+            margin-left: 5px;
+        }
+        
+        .loading-text {
+             font-style: italic;
+             font-weight: normal;
+             font-size: 0.9em;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: #ccc;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: white;
+            text-decoration: underline;
+        }
+
+        .product-grid {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-top: 5px solid var(--shop-primary-color);
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .product-icon {
+            font-size: 3em;
+            color: var(--shop-primary-color);
+            margin-bottom: 15px;
+        }
+        
+        /* Iconos de plataformas */
+        .fa-netflix { color: #E50914; }
+        .fa-disney { color: #1f3a5f; }
+        .fa-hbo { color: #6a1b9a; }
+        .fa-amazon { color: #00A8E1; }
+        .fa-palette { color: #f1c40f; }
+        .fa-box { color: #e67e22; }
+
+        .product-card h3 {
+            color: var(--shop-secondary-color);
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+
+        .price {
+            font-size: 1.8em;
+            color: #e74c3c;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        
+        .price small {
+            font-size: 0.5em;
+            color: #999;
+            font-weight: normal;
+        }
+
+        .features {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .features li {
+            padding: 5px 0;
+            border-bottom: 1px dotted #eee;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .features i {
+            color: var(--shop-primary-color);
+        }
+
+        .buy-button {
+            display: block;
+            background-color: var(--shop-primary-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.3s;
+            font-size: 1.1em;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .buy-button:hover {
+            background-color: #2ecc71;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .product-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Tienda Oficial de Cuentas Premium</h1>
+        <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Volver a Acceso Cliente/Admin</a>
+    </div>
+
+    <div class="tasa-usdt-box">
+        <i class="fas fa-money-check-alt"></i> Tasa de Pago (USDT): 1 USDT = 
+        <span id="usdt-price" class="loading-text">Cargando...</span>
+    </div>
+
+    <div class="product-grid">
+
+        <div class="product-card">
+            <i class="fab fa-netflix product-icon"></i>
+            <h3>Netflix Ultra HD (1 Perfil)</h3>
+            <p class="price">$3.50 <small> / mes</small></p>
+            <ul class="features">
+                <li><i class="fas fa-check-circle"></i> Calidad 4K Ultra HD</li>
+                <li><i class="fas fa-tv"></i> Uso exclusivo de 1 perfil</li>
+                <li><i class="fas fa-globe"></i> Funciona en cualquier país</li>
+                <li><i class="fas fa-headset"></i> Soporte 24/7</li>
+            </ul>
+            <a href="https://wa.me/TU_NUMERO_WHATSAPP?text=Hola,%20me%20interesa%20comprar%20una%20cuenta%20de%20Netflix%20Ultra%20HD%20($3.50).%20Gracias." target="_blank" class="buy-button">
+                <i class="fab fa-whatsapp"></i> Comprar por WhatsApp
+            </a>
+        </div>
+
+        <div class="product-card">
+            <i class="fas fa-film product-icon fa-disney" style="color:#007bff;"></i>
+            <h3>Disney+ (Pantalla Compartida)</h3>
+            <p class="price">$3.50 <small> / mes</small></p>
+            <ul class="features">
+                <li><i class="fas fa-check-circle"></i> Acceso a Disney, Star y más</li>
+                <li><i class="fas fa-user-friends"></i> 1 Perfil asignado</li>
+                <li><i class="fas fa-calendar-alt"></i> Renovación automática</li>
+                <li><i class="fas fa-shield-alt"></i> Garantía de 30 días</li>
+            </ul>
+            <a href="https://wa.me/TU_NUMERO_WHATSAPP?text=Hola,%20me%20interesa%20comprar%20una%20cuenta%20de%20Disney+%20($3.50).%20Gracias." target="_blank" class="buy-button">
+                 <i class="fab fa-whatsapp"></i> Comprar por WhatsApp
+            </a>
+        </div>
+        
+        <div class="product-card">
+            <i class="fab fa-amazon product-icon"></i>
+            <h3>Amazon Prime Video (1 Perfil)</h3>
+            <p class="price">$3.00 <small> / mes</small></p>
+            <ul class="features">
+                <li><i class="fas fa-check-circle"></i> Películas y series Prime</li>
+                <li><i class="fas fa-gift"></i> Beneficios de Amazon Prime</li>
+                <li><i class="fas fa-tv"></i> Uso exclusivo de 1 perfil</li>
+                <li><i class="fas fa-shield-alt"></i> Garantía de 30 días</li>
+            </ul>
+            <a href="https://wa.me/TU_NUMERO_WHATSAPP?text=Hola,%20me%20interesa%20comprar%20una%20cuenta%20de%20Amazon%20Prime%20Video%20($3.00).%20Gracias." target="_blank" class="buy-button">
+                 <i class="fab fa-whatsapp"></i> Comprar por WhatsApp
+            </a>
+        </div>
+
+
+        <div class="product-card">
+            <i class="fas fa-mask product-icon fa-hbo" style="color: purple;"></i>
+            <h3>HBO MAX (Premium)</h3>
+            <p class="price">$2.50 <small> / mes</small></p>
+            <ul class="features">
+                <li><i class="fas fa-check-circle"></i> Catálogo completo de MAX</li>
+                <li><i class="fas fa-mobile-alt"></i> Compatible con todos los dispositivos</li>
+                <li><i class="fas fa-award"></i> Estrenos exclusivos</li>
+                <li><i class="fas fa-headset"></i> Soporte 24/7</li>
+            </ul>
+            <a href="https://wa.me/TU_NUMERO_WHATSAPP?text=Hola,%20me%20interesa%20comprar%20una%20cuenta%20de%20HBO%20MAX%20($2.50).%20Gracias." target="_blank" class="buy-button">
+                 <i class="fab fa-whatsapp"></i> Comprar por WhatsApp
+            </a>
+        </div>
+        
+        <div class="product-card">
+            <i class="fas fa-palette product-icon fa-palette"></i>
+            <h3>Canva Pro (Diseño Gráfico)</h3>
+            <p class="price">$1.50 <small> / mes</small></p>
+            <ul class="features">
+                <li><i class="fas fa-check-circle"></i> Acceso a todas las funciones Pro</li>
+                <li><i class="fas fa-users"></i> Espacio en equipo compartido</li>
+                <li><i class="fas fa-file-image"></i> Miles de plantillas premium</li>
+                <li><i class="fas fa-laptop-code"></i> Ideal para revendedores</li>
+            </ul>
+            <a href="https://wa.me/TU_NUMERO_WHATSAPP?text=Hola,%20me%20interesa%20comprar%20una%20licencia%20de%20Canva%20Pro%20($1.50).%20Gracias." target="_blank" class="buy-button">
+                 <i class="fab fa-whatsapp"></i> Comprar por WhatsApp
+            </a>
+        </div>
+        
+         <div class="product-card">
+            <i class="fas fa-box product-icon fa-box"></i>
+            <h3>Paquete para Revendedores</h3>
+            <p class="price">$45.00 <small> / 10 cuentas</small></p>
+            <ul class="features">
+                <li><i class="fas fa-check-circle"></i> Precio especial por volumen</li>
+                <li><i class="fas fa-chart-line"></i> Acceso a todas las plataformas</li>
+                <li><i class="fas fa-lock"></i> Datos de cliente 100% seguros</li>
+                <li><i class="fas fa-handshake"></i> Soporte y ayuda en ventas</li>
+            </ul>
+            <a href="https://wa.me/TU_NUMERO_WHATSAPP?text=Hola,%20me%20interesa%20el%20paquete%20de%20revendedor.%20Quiero%20más%20información%20sobre%20los%20precios%20al%20mayor." target="_blank" class="buy-button">
+                 <i class="fab fa-whatsapp"></i> Contactar para Revendedor
+            </a>
+        </div>
+
+    </div>
+
+    <script>
+        // ¡IMPORTANTE! El número de WhatsApp ha sido actualizado aquí
+        // Formato para wa.me: (código de país) + (número sin el 0 inicial). Asumiendo código 58 (Venezuela)
+        const numeroWhatsapp = '584248411284'; // <-- NUEVO NÚMERO: 04248411284
+        const usdtPriceElement = document.getElementById('usdt-price');
+
+        // Función para obtener la tasa de USDT (usando CoinGecko API)
+        async function fetchUsdtPrice() {
+            try {
+                // Obtenemos el precio de USDT en USD 
+                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=usd');
+                const data = await response.json();
+                
+                const priceUsdtToUsd = data.tether.usd; 
+                const formattedPrice = priceUsdtToUsd.toFixed(4);
+                
+                usdtPriceElement.textContent = `$${formattedPrice} USD`;
+                usdtPriceElement.classList.remove('loading-text');
+
+            } catch (error) {
+                console.error("Error al obtener la tasa de USDT:", error);
+                usdtPriceElement.textContent = 'Error al cargar (Usar $1.00)';
+                usdtPriceElement.style.color = 'red';
+            }
+        }
+        
+        // Función para reemplazar el número de WhatsApp en los enlaces
+        function updateWhatsappLinks() {
+             document.querySelectorAll('.buy-button').forEach(button => {
+                let currentHref = button.getAttribute('href');
+                let newHref = currentHref.replace('TU_NUMERO_WHATSAPP', numeroWhatsapp);
+                button.setAttribute('href', newHref);
+            });
+        }
+
+        // Ejecutar las funciones al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            updateWhatsappLinks();
+            fetchUsdtPrice(); 
+            // Opcional: actualizar la tasa cada 60 segundos
+            setInterval(fetchUsdtPrice, 60000); 
+        });
+    </script>
+
+</body>
+</html>
